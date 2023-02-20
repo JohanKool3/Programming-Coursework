@@ -25,6 +25,24 @@ class SmartHome(object):
     def getDevices(self):
         return self.devices
 
+    def getNumOnDevices(self):
+        numOn = 0
+
+        for device in self.devices:
+            if device.getSwitchState():
+                numOn += 1
+
+        return numOn
+
+    def getNumOffDevices(self):
+        numOff = 0
+
+        for device in self.devices:
+            if not device.getSwitchState():
+                numOff += 1
+
+        return numOff
+
     def getDeviceat(self, index):
         return self.devices[index]
 
@@ -71,7 +89,13 @@ class SmartPlug(object):
         return self.consumptionRate
 
     def setConsumptionRate(self, rate):
+        
+        if not rate.isdigit():
+            print("Invalid consumption rate, must be an integer.")
+            return
 
+        else:
+            rate = int(rate)
         if 0 <= rate <= 150:
             self.consumptionRate = rate
 
@@ -79,11 +103,11 @@ class SmartPlug(object):
             print("Invalid consumption rate, must be between 0 and 150.")
 
 
-class SmartWashingMachine(object):
+class SmartWashingMachine(SmartPlug):
 
     def __init__(self):
 
-        self.switchedOn = False
+        super().__init__()
         self.washModes = ["Daily wash", "Quick wash", "Eco"]
         self.washMode = self.washModes[0]
 
@@ -96,9 +120,6 @@ class SmartWashingMachine(object):
         output = f"Smart Washing Machine: {switchStatus} | Wash Mode: {self.washMode}"
 
         return output
-    
-    def toggleSwitch(self):
-        self.switchedOn = not self.switchedOn
 
     def setWashMode(self, mode):
         if mode in self.washModes:
@@ -106,13 +127,18 @@ class SmartWashingMachine(object):
         else:
             print("Invalid wash mode.")
 
-    def getSwitchState(self):
-        return self.switchedOn
+    def setWashMode(self, index):
+        if 0 <= index < len(self.washModes):
+            self.washMode = self.washModes[index]
+        else:
+            print("Invalid wash mode.")
     
     def getWashMode(self):
         return self.washMode
 
-    
+    def getWashModes(self):
+        return self.washModes
+
 """
     Beginning of the function library for the backend.
 """
