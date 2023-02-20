@@ -6,6 +6,7 @@ Global variables that include: backend manager, Tkinter window
 """
 smartHome = SmartHome()
 mainWin = Tk()
+deviceLabels = []
 
 WINDOWDEFAULTS = [650, 400]
 
@@ -26,6 +27,13 @@ def dynamicUpdate():
     """
     This function is responsible for updating the GUI following a users actions
     """
+
+    if len(deviceLabels) > 0:
+
+        # Removes the device labels from the GUI as to make it cleaner
+        for device in deviceLabels:
+            device.grid_remove() 
+
     extraWidgets = 2
     mainWin.geometry(f"{WINDOWDEFAULTS[0]}x{(len(smartHome.devices)+ extraWidgets) * 50 }")
     # Creation of the device list
@@ -35,11 +43,12 @@ def dynamicUpdate():
         deviceLabel = Label(mainWin, text=str(device))
         deviceLabel.grid(row=i + 2, column=0)
 
+
+        deviceLabels.append(deviceLabel)
         # Anonymous function that is used to toggle the value of a given device as well as update the GUI 
         def toggleDevice(d=device):
             d.toggleSwitch()
             dynamicUpdate()
-
 
         def customWindow(d=device):
             """This is the cusomization window that is used to change the settings of a given device"""
@@ -80,17 +89,21 @@ def dynamicUpdate():
 
                 for index in range(len(d.getWashModes())):
 
+                    def setWashMode(i=index):
+                        d.setWashMode(i)
+                        dynamicUpdate()
+
                     def updateCycleLabel():
                         cycleLabel = Label(customWindow, text=f"{index + 1}: {d.getWashModes()[index]}")
                         cycleLabel.grid(row=index + 3, column=0)
 
-                        cycleButton = Button(customWindow, text="Select", command=lambda: d.setWashMode(index))
+                        cycleButton = Button(customWindow, text="Select", command=setWashMode)
                         cycleButton.grid(row=index + 3, column=1)
                     updateCycleLabel()
 
             # Update the GUI
             dynamicUpdate()
-
+        
         # For each device add device toggle buttons as well as customise buttons
         deviceSwitch = Button(mainWin, text="Toggle Device", command=toggleDevice)
         deviceSwitch.grid(row=i + 2, column=1)
@@ -115,7 +128,6 @@ def turnoffAllDevices():
 def turnonAllDevices():
     smartHome.turnonAllDevices()
     dynamicUpdate()
-
 def setupGUI():
     """ The main setup function for the GUI """
     mainWin.title("Smart Home")
