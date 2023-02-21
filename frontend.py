@@ -6,11 +6,10 @@ Global variables that include: backend manager, Tkinter window
 """
 smartHome = SmartHome()
 mainWin = Tk()
+# This variables stores the labels for each device and the number of currently active devices (in index 0)
 deviceLabels = []
 
 WINDOWDEFAULTS = [650, 400]
-
-
 """
 Start of the function library for the frontend of the coursework 
 """
@@ -22,130 +21,122 @@ def setupHome():
     for i in range(3):
         smartHome.addDevice(SmartWashingMachine())
 
-
-def dynamicUpdate():
-    """
-    This function is responsible for updating the GUI following a users actions
-    """
-
-    if len(deviceLabels) > 0:
-
-        # Removes the device labels from the GUI as to make it cleaner
-        for device in deviceLabels:
-            device.grid_remove() 
-
-    extraWidgets = 2
-    mainWin.geometry(f"{WINDOWDEFAULTS[0]}x{(len(smartHome.devices)+ extraWidgets) * 50 }")
-    # Creation of the device list
-    for i in range(len(smartHome.devices)):
-
-        device = smartHome.devices[i]
-        deviceLabel = Label(mainWin, text=str(device))
-        deviceLabel.grid(row=i + 2, column=0)
-
-
-        deviceLabels.append(deviceLabel)
-        # Anonymous function that is used to toggle the value of a given device as well as update the GUI 
-        def toggleDevice(d=device):
-            d.toggleSwitch()
-            dynamicUpdate()
-
-        def customWindow(d=device):
-            """This is the cusomization window that is used to change the settings of a given device"""
-
-
-            customWindow = Toplevel()
-
-            customWindow.geometry(f"{WINDOWDEFAULTS[0]}x{WINDOWDEFAULTS[1]}")
-            customWindow.title(f"Customise {type(d).__name__}")
-
-            #Title label
-            titleLabel = Label(customWindow, text=f"Customise {type(d).__name__}")
-            titleLabel.config(font=("TkDefaultFont", 20, "bold"))
-            titleLabel.grid(row=0, column=0)
-
-            # Exit button
-            exitButton = Button(customWindow, text="Exit", command=customWindow.destroy)
-            exitButton.grid(row=0, column=1)
-
-            # Consumption customisation
-            consumptionLabel = Label(customWindow, text=f"Consumption")
-            consumptionLabel.grid(row=1, column=0)
-
-            consumptionEntry = Entry(customWindow)
-            consumptionEntry.insert(0, d.getConsumptionRate())
-            consumptionEntry.grid(row=1, column=1)
-
-            consumptionConfirm = Button(customWindow, text="Confirm", command=lambda: d.setConsumptionRate(consumptionEntry.get()))
-            consumptionConfirm.grid(row=1, column=2)
-
-            # Change washing cycle if it is a washing machine
-            if isinstance(d, SmartWashingMachine):
-
-                cycleLabel = Label(customWindow, text="Washing Cycle")
-                cycleLabel.grid(row=2, column=0)
-
-
-
-                for index in range(len(d.getWashModes())):
-
-                    def setWashMode(i=index):
-                        d.setWashMode(i)
-                        dynamicUpdate()
-
-                    def updateCycleLabel():
-                        cycleLabel = Label(customWindow, text=f"{index + 1}: {d.getWashModes()[index]}")
-                        cycleLabel.grid(row=index + 3, column=0)
-
-                        cycleButton = Button(customWindow, text="Select", command=setWashMode)
-                        cycleButton.grid(row=index + 3, column=1)
-                    updateCycleLabel()
-
-            # Update the GUI
-            dynamicUpdate()
-        
-        # For each device add device toggle buttons as well as customise buttons
-        deviceSwitch = Button(mainWin, text="Toggle Device", command=toggleDevice)
-        deviceSwitch.grid(row=i + 2, column=1)
-
-        deviceCustomise = Button(mainWin, text="Customise Device", command=customWindow)
-        deviceCustomise.grid(row=i + 2, column=2)
-
-    
-    # Create a label that displays the number of devices that are on and off
-    numOnLabel = Label(mainWin, text=f"Number of devices on: {smartHome.getNumOnDevices()}")
-    numOnLabel.grid(row=len(smartHome.devices) + 2, column=0)
-
-    mainWin.update()
-
-"""
-These functions are used to turn off and on all the devices in the smart home as well as update the GUI
-"""
+""" These functions are used to turn off and on all the devices in the smart home """
 def turnoffAllDevices():
     smartHome.turnoffAllDevices()
-    dynamicUpdate()
+    updateGUI()
 
 def turnonAllDevices():
     smartHome.turnonAllDevices()
-    dynamicUpdate()
+    updateGUI()
+
+""" These functions are used to create the GUI elements"""
+def createTopLine():
+
+    # Main title
+    titleLabel = Label(mainWin, text="Smart Home", font=("TkDefaultFont", 20, "bold"))
+    titleLabel.grid(row=0, column=1, columnspan=2)
+
+    # Global buttons for all devices
+    switchOffAllButton = Button(mainWin, text="Switch Off All", command=turnoffAllDevices)
+    switchOffAllButton.grid(row=1, column=0)
+
+    switchOnAllButton = Button(mainWin, text="Switch On All", command=turnonAllDevices)
+    switchOnAllButton.grid(row=2, column=0)
+
+def createDevices():
+    """ This function creates both the labels and buttons for each device """
+    height = (len(smartHome.getDevices()) * 30) + 150
+    mainWin.geometry(f"{WINDOWDEFAULTS[0]}x{height}")
+    for i in range(len(smartHome.getDevices())):
+
+        # Anonymous function for toggling a given device
+        def toggleDevice(index=i):
+            device = smartHome.getDeviceat(index)
+            device.toggleSwitch()
+
+            updateGUI()
+
+        def customiseDevice(index=i):
+            """ This function is responsible for creating a new window that will allow the user to customise the device """
+            device = smartHome.getDeviceat(index)
+
+            customiseWin = Toplevel(mainWin)
+            customiseWin.title("Customise Device")
+
+            customiseTitle = Label(customiseWin, text="Customise Device",font=("TkDefaultFont", 20, "bold"))
+            customiseTitle.grid(row=0, column=1, columnspan=2)
+
+            # Handle customisation differently for each device type
+            if isinstance(device, SmartPlug):
+                pass
+
+            else:
+                pass
+            updateGUI()
+        
+        device = smartHome.devices[i]
+
+        deviceLabel = Label(mainWin, text=str(device))
+        deviceButton = Button(mainWin, text="Toggle this", command=toggleDevice)
+        customiseDeviceButton = Button(mainWin, text="Customise", command=customiseDevice)
+        deviceLabels.append(deviceLabel)
+
+        deviceLabel.grid(row=i + 3, column=0)
+        deviceButton.grid(row=i + 3, column=1)
+        customiseDeviceButton.grid(row=i + 3, column=2)
+
+def createBottomLine():
+    """ This function creates the functionality for adding devices and removing devices from the smart home as well as displaying the number of active devices """
+    
+    activeDevicesCount = Label(mainWin, text=f"Active Devices: {smartHome.getNumOnDevices()}")
+    activeDevicesCount.grid(row=len(smartHome.getDevices()) + 3, column=0)
+    deviceLabels.append(activeDevicesCount)
+
+    addDeviceButton = Button(mainWin, text="Add Device", command=addDeviceWindow)
+    addDeviceButton.grid(row=len(smartHome.getDevices()) + 4, column=0)
+
+    removeDeviceButton = Button(mainWin, text="Remove Device", command=removeDeviceWindow)
+    removeDeviceButton.grid(row=len(smartHome.getDevices()) + 4, column=1)
+
+# The windows that are needed for the challenge feature (7.5)
+def addDeviceWindow():
+    addWin = Toplevel(mainWin)
+    addWin.title("Add Device")
+
+    addLabel = Label(addWin, text="Add Device", font=("TkDefaultFont", 20, "bold"))
+    addLabel.grid(row=0, column=1, columnspan=2)
+
+def removeDeviceWindow():
+    removeWin = Toplevel(mainWin)
+    removeWin.title("Remove Device")
+
+    removeLabel = Label(removeWin, text="Remove Device", font=("TkDefaultFont", 20, "bold"))
+    removeLabel.grid(row=0, column=1, columnspan=2)
+
+""" These function are used to manage the GUI and make sure it is up to date"""
+def updateGUI():
+    """ This function updates each label by configuring the text to be the string function of each device """
+    for index in range(len(smartHome.getDevices())):
+
+        device = smartHome.getDeviceat(index)
+        deviceLabel = deviceLabels[index]
+        deviceLabel.config(text=str(device))
+
+    deviceLabels[-1].config(text=f"Active Devices: {smartHome.getNumOnDevices()}")
+
+""" Main functions that are outlined in the coursework specification """
 def setupGUI():
     """ The main setup function for the GUI """
     mainWin.title("Smart Home")
     mainWin.geometry(f"{WINDOWDEFAULTS[0]}x{WINDOWDEFAULTS[1]}")
     mainWin.resizable(False, False)
 
-    # Create switch off and switch on all buttons
-    switchOffAllButton = Button(mainWin, text="Switch Off All", command=turnoffAllDevices)
-    switchOffAllButton.grid(row=0, column=0)
-
-    switchOnAllButton = Button(mainWin, text="Switch On All", command=turnonAllDevices)
-    switchOnAllButton.grid(row=1, column=0)
-
-    # Create toggle switch for each device
-    dynamicUpdate()
+    createTopLine()
+    createDevices()
+    createBottomLine()
 
     mainWin.mainloop()
-
 
 def main():
     """ Main function that is called to create both backend and frontend """
