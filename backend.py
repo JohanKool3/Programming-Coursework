@@ -22,6 +22,13 @@ class SmartHome(object):
     def addDevice(self, device):
         self.devices.append(device)
 
+    def removeDeviceAt(self, index):
+        try:
+            self.devices.pop(index)
+
+        except ValueError:
+            print("Invalid index.")
+
     def getDevices(self):
         return self.devices
 
@@ -127,7 +134,7 @@ class SmartWashingMachine(SmartPlug):
         else:
             print("Invalid wash mode.")
 
-    def setWashMode(self, index):
+    def setWashModeAt(self, index):
         if 0 <= index < len(self.washModes):
             self.washMode = self.washModes[index]
         else:
@@ -135,6 +142,12 @@ class SmartWashingMachine(SmartPlug):
     
     def getWashMode(self):
         return self.washMode
+
+    def getWashModeAt(self, index):
+        if 0 <= index < len(self.washModes):
+            return self.washModes[index]
+        else:
+            print("Invalid wash mode.")
 
     def getWashModes(self):
         return self.washModes

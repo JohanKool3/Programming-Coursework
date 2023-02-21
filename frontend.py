@@ -48,6 +48,7 @@ def createDevices():
     """ This function creates both the labels and buttons for each device """
     height = (len(smartHome.getDevices()) * 30) + 150
     mainWin.geometry(f"{WINDOWDEFAULTS[0]}x{height}")
+
     for i in range(len(smartHome.getDevices())):
 
         # Anonymous function for toggling a given device
@@ -68,13 +69,42 @@ def createDevices():
             customiseTitle.grid(row=0, column=1, columnspan=2)
 
             # Handle customisation differently for each device type
-            if isinstance(device, SmartPlug):
-                pass
+            if type(device) == SmartPlug:
+                
+                consumptionLabel = Label(customiseWin, text="Consumption (W):")
+                consumptionLabel.grid(row=1, column=0)
+
+                consumptionEntry = Entry(customiseWin)
+                consumptionEntry.insert(0, device.getConsumptionRate())
+                consumptionEntry.grid(row=1, column=1)
+
+                def confirmConsumption(d=device):
+                    device.setConsumptionRate(consumptionEntry.get())
+                    customiseWin.destroy()
+                    updateGUI()
+
+                confirmButton = Button(customiseWin, text="Confirm", command=confirmConsumption)
+                confirmButton.grid(row=1, column=2)
 
             else:
-                pass
+                
+                washModeTitleLabel = Label(customiseWin, text="Wash Mode:")
+                washModeTitleLabel.grid(row=1, column=0)
+
+                for index in range(len(device.getWashModes())):
+                    
+                    def confirmWashMode(washMode=index):
+                        device.setWashModeAt(washMode)
+                        updateGUI()
+                    
+                    washModeLabel = Label(customiseWin, text=device.getWashModeAt(index))
+                    washModeLabel.grid(row=index + 2, column=1)
+
+                    washModeConfirmButton = Button(customiseWin, text="Confirm", command=confirmWashMode)
+                    washModeConfirmButton.grid(row=index + 2, column=2)
             updateGUI()
         
+
         device = smartHome.devices[i]
 
         deviceLabel = Label(mainWin, text=str(device))
@@ -101,18 +131,62 @@ def createBottomLine():
 
 # The windows that are needed for the challenge feature (7.5)
 def addDeviceWindow():
+
+    def addSmartPlug():
+        smartHome.addDevice(SmartPlug())
+        deleteGUI()
+        setupGUI()
+        updateGUI()
+
+    def addSmartWasher():
+        smartHome.addDevice(SmartWashingMachine())
+        deleteGUI()
+        setupGUI()
+        updateGUI()
+
     addWin = Toplevel(mainWin)
     addWin.title("Add Device")
+    addWin.resizable(False, False)
 
     addLabel = Label(addWin, text="Add Device", font=("TkDefaultFont", 20, "bold"))
-    addLabel.grid(row=0, column=1, columnspan=2)
+    addLabel.grid(row=0, column=0, columnspan=2)
+
+    # Add Smart Plug Functionality
+    smartPlugLabel = Label(addWin, text="Smart Plug")
+    smartPlugLabel.grid(row=1, column=0)
+    smartPlugAddButton = Button(addWin, text="Add", command=addSmartPlug)
+    smartPlugAddButton.grid(row=1, column=1)
+
+    # Add Smart Washer Functionality
+    smartWasherLabel = Label(addWin, text="Smart Washing Machine")
+    smartWasherLabel.grid(row=2, column=0)
+    smartWasherAddButton = Button(addWin, text="Add", command=addSmartWasher)
+    smartWasherAddButton.grid(row=2, column=1)
 
 def removeDeviceWindow():
     removeWin = Toplevel(mainWin)
     removeWin.title("Remove Device")
+    removeWin.resizable(False, False)
 
     removeLabel = Label(removeWin, text="Remove Device", font=("TkDefaultFont", 20, "bold"))
-    removeLabel.grid(row=0, column=1, columnspan=2)
+    removeLabel.grid(row=0, column=0, columnspan=2)
+
+    for index in range(len(smartHome.getDevices())):
+
+        def removeDevice(index=index):
+            smartHome.removeDeviceAt(index)
+            deviceLabels.remove(deviceLabels[index])
+            deleteGUI()
+            setupGUI()
+            updateGUI()
+
+        device = smartHome.getDeviceat(index)
+
+        deviceLabel = Label(removeWin, text=str(device))
+        deviceLabel.grid(row=index + 1, column=0)
+
+        removeButton = Button(removeWin, text="Remove", command=removeDevice)
+        removeButton.grid(row=index + 1, column=1)
 
 """ These function are used to manage the GUI and make sure it is up to date"""
 def updateGUI():
@@ -137,6 +211,13 @@ def setupGUI():
     createBottomLine()
 
     mainWin.mainloop()
+
+def deleteGUI():
+
+    global deviceLabels
+    deviceLabels = []
+    for widget in mainWin.winfo_children():
+        widget.destroy()
 
 def main():
     """ Main function that is called to create both backend and frontend """
