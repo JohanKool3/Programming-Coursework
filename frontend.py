@@ -1,19 +1,18 @@
 from backend import SmartHome, SmartPlug, SmartWashingMachine
 from tkinter import *
 
-"""
-Global variables that include: backend manager, Tkinter window
-"""
+""" Global variables that include: backend manager, Tkinter window """
 smartHome = SmartHome()
 mainWin = Tk()
 # This variables stores the labels for each device and the number of currently active devices (in index 0)
 deviceLabels = []
 
+# Constants
 WINDOWDEFAULTS = [650, 400]
-"""
-Start of the function library for the frontend of the coursework 
-"""
+
+""" Start of the function library for the frontend of the coursework """
 def setupHome():
+    """ This function is responsible for setting up the smart home with the default devices outined in task 4 """
 
     for i in range(2):
         smartHome.addDevice(SmartPlug())
@@ -32,10 +31,15 @@ def turnonAllDevices():
 
 """ These functions are used to create the GUI elements"""
 def createTopLine():
+    """ Creates the header information for the GUI"""
 
     # Main title
     titleLabel = Label(mainWin, text="Smart Home", font=("TkDefaultFont", 20, "bold"))
-    titleLabel.grid(row=0, column=1, columnspan=2)
+    titleLabel.grid(row=0, column=0, columnspan=2)
+
+    # Exit button
+    exitButton = Button(mainWin, text="Exit", command=quit)
+    exitButton.grid(row=0, column=1)
 
     # Global buttons for all devices
     switchOffAllButton = Button(mainWin, text="Switch Off All", command=turnoffAllDevices)
@@ -46,6 +50,7 @@ def createTopLine():
 
 def createDevices():
     """ This function creates both the labels and buttons for each device """
+
     height = (len(smartHome.getDevices()) * 30) + 150
     mainWin.geometry(f"{WINDOWDEFAULTS[0]}x{height}")
 
@@ -64,6 +69,7 @@ def createDevices():
 
             customiseWin = Toplevel(mainWin)
             customiseWin.title("Customise Device")
+            customiseWin.resizable(False, False)
 
             customiseTitle = Label(customiseWin, text="Customise Device",font=("TkDefaultFont", 20, "bold"))
             customiseTitle.grid(row=0, column=1, columnspan=2)
@@ -131,6 +137,7 @@ def createBottomLine():
 
 # The windows that are needed for the challenge feature (7.5)
 def addDeviceWindow():
+    """ This function is responsible for creating a window that allows the user to add a new device """
 
     def addSmartPlug():
         smartHome.addDevice(SmartPlug())
@@ -164,6 +171,8 @@ def addDeviceWindow():
     smartWasherAddButton.grid(row=2, column=1)
 
 def removeDeviceWindow():
+    """ This function is responsible for creating a window that allows the user to remove a device """
+
     removeWin = Toplevel(mainWin)
     removeWin.title("Remove Device")
     removeWin.resizable(False, False)
@@ -174,6 +183,7 @@ def removeDeviceWindow():
     for index in range(len(smartHome.getDevices())):
 
         def removeDevice(index=index):
+            removeWin.destroy()
             smartHome.removeDeviceAt(index)
             deviceLabels.remove(deviceLabels[index])
             deleteGUI()
@@ -191,17 +201,27 @@ def removeDeviceWindow():
 """ These function are used to manage the GUI and make sure it is up to date"""
 def updateGUI():
     """ This function updates each label by configuring the text to be the string function of each device """
-    for index in range(len(smartHome.getDevices())):
 
-        device = smartHome.getDeviceat(index)
-        deviceLabel = deviceLabels[index]
-        deviceLabel.config(text=str(device))
+    # Check in place as to allow the GUI to be closed without an error occurring
+    if len(deviceLabels) > 0:
 
-    deviceLabels[-1].config(text=f"Active Devices: {smartHome.getNumOnDevices()}")
+        for index in range(len(smartHome.getDevices())):
+
+            device = smartHome.getDeviceat(index)
+            deviceLabel = deviceLabels[index]
+            deviceLabel.config(text=str(device))
+
+        deviceLabels[-1].config(text=f"Active Devices: {smartHome.getNumOnDevices()}")
+
+def quit():
+    """ This function is used for the quit button at the top of the GUI """
+    deleteGUI()
+    mainWin.destroy()
 
 """ Main functions that are outlined in the coursework specification """
 def setupGUI():
     """ The main setup function for the GUI """
+
     mainWin.title("Smart Home")
     mainWin.geometry(f"{WINDOWDEFAULTS[0]}x{WINDOWDEFAULTS[1]}")
     mainWin.resizable(False, False)
@@ -213,6 +233,7 @@ def setupGUI():
     mainWin.mainloop()
 
 def deleteGUI():
+    """ This function removes all widgets from the GUI and resets the deviceLabels list """
 
     global deviceLabels
     deviceLabels = []
@@ -221,7 +242,10 @@ def deleteGUI():
 
 def main():
     """ Main function that is called to create both backend and frontend """
+
     setupHome()
     setupGUI()
 
-main()
+# Only runs this if the file is run directly
+if __name__ == "__main__":
+    main()
