@@ -20,14 +20,16 @@ def setupHome():
     for i in range(3):
         smartHome.addDevice(SmartWashingMachine())
 
-""" These functions are used to turn off and on all the devices in the smart home """
 def turnoffAllDevices():
+    """ Turns off all the devices in the 'smartHome' object """
     smartHome.turnoffAllDevices()
     updateGUI()
 
 def turnonAllDevices():
+    """ Turns on all the devices in the 'smartHome' object """
     smartHome.turnonAllDevices()
     updateGUI()
+
 
 """ These functions are used to create the GUI elements"""
 def createTopLine():
@@ -49,7 +51,7 @@ def createTopLine():
     switchOnAllButton.grid(row=2, column=0)
 
 def createDevices():
-    """ This function creates both the labels and buttons for each device """
+    """ This function creates both the labels and buttons for each device in the 'smartHome' object """
 
     height = (len(smartHome.getDevices()) * 30) + 150
     mainWin.geometry(f"{WINDOWDEFAULTS[0]}x{height}")
@@ -60,56 +62,10 @@ def createDevices():
         def toggleDevice(index=i):
             device = smartHome.getDeviceat(index)
             device.toggleSwitch()
-
             updateGUI()
 
         def customiseDevice(index=i):
-            """ This function is responsible for creating a new window that will allow the user to customise the device """
-            device = smartHome.getDeviceat(index)
-
-            customiseWin = Toplevel(mainWin)
-            customiseWin.title("Customise Device")
-            customiseWin.resizable(False, False)
-
-            customiseTitle = Label(customiseWin, text="Customise Device",font=("TkDefaultFont", 20, "bold"))
-            customiseTitle.grid(row=0, column=1, columnspan=2)
-
-            # Handle customisation differently for each device type
-            if type(device) == SmartPlug:
-                
-                consumptionLabel = Label(customiseWin, text="Consumption (W):")
-                consumptionLabel.grid(row=1, column=0)
-
-                consumptionEntry = Entry(customiseWin)
-                consumptionEntry.insert(0, device.getConsumptionRate())
-                consumptionEntry.grid(row=1, column=1)
-
-                def confirmConsumption(d=device):
-                    device.setConsumptionRate(consumptionEntry.get())
-                    customiseWin.destroy()
-                    updateGUI()
-
-                confirmButton = Button(customiseWin, text="Confirm", command=confirmConsumption)
-                confirmButton.grid(row=1, column=2)
-
-            else:
-                
-                washModeTitleLabel = Label(customiseWin, text="Wash Mode:")
-                washModeTitleLabel.grid(row=1, column=0)
-
-                for index in range(len(device.getWashModes())):
-                    
-                    def confirmWashMode(washMode=index):
-                        device.setWashModeAt(washMode)
-                        updateGUI()
-                    
-                    washModeLabel = Label(customiseWin, text=device.getWashModeAt(index))
-                    washModeLabel.grid(row=index + 2, column=1)
-
-                    washModeConfirmButton = Button(customiseWin, text="Confirm", command=confirmWashMode)
-                    washModeConfirmButton.grid(row=index + 2, column=2)
-            updateGUI()
-        
+            customiseWindow(index)
 
         device = smartHome.devices[i]
 
@@ -135,7 +91,7 @@ def createBottomLine():
     removeDeviceButton = Button(mainWin, text="Remove Device", command=removeDeviceWindow)
     removeDeviceButton.grid(row=len(smartHome.getDevices()) + 4, column=1)
 
-# The windows that are needed for the challenge feature (7.5)
+# The windows here are responsible for the challenge features
 def addDeviceWindow():
     """ This function is responsible for creating a window that allows the user to add a new device """
 
@@ -198,6 +154,58 @@ def removeDeviceWindow():
         removeButton = Button(removeWin, text="Remove", command=removeDevice)
         removeButton.grid(row=index + 1, column=1)
 
+def customiseWindow(index):
+    """ This function is responsible for creating a new window that will allow the user to customise the device """
+
+    # Device that is being customised
+    device = smartHome.getDeviceat(index)
+
+    # GUI setup and generation
+    customiseWin = Toplevel(mainWin)
+    customiseWin.title("Customise Device")
+    customiseWin.resizable(False, False)
+
+    customiseTitle = Label(customiseWin, text="Customise Device",font=("TkDefaultFont", 20, "bold"))
+    customiseTitle.grid(row=0, column=1, columnspan=2)
+
+    # Handle customisation differently for each device type
+    if type(device) == SmartPlug:
+        
+        consumptionLabel = Label(customiseWin, text="Consumption (W):")
+        consumptionLabel.grid(row=1, column=0)
+
+        consumptionEntry = Entry(customiseWin)
+        consumptionEntry.insert(0, device.getConsumptionRate())
+        consumptionEntry.grid(row=1, column=1)
+
+        def confirmConsumption(d=device):
+            device.setConsumptionRate(consumptionEntry.get())
+            customiseWin.destroy()
+            updateGUI()
+
+        confirmButton = Button(customiseWin, text="Confirm", command=confirmConsumption)
+        confirmButton.grid(row=1, column=2)
+
+    else:
+        
+        washModeTitleLabel = Label(customiseWin, text="Wash Mode:")
+        washModeTitleLabel.grid(row=1, column=0)
+
+        for index in range(len(device.getWashModes())):
+            
+            def confirmWashMode(washMode=index):
+                device.setWashModeAt(washMode)
+                customiseWin.destroy()
+                updateGUI()
+            
+            washModeLabel = Label(customiseWin, text=device.getWashModeAt(index))
+            washModeLabel.grid(row=index + 2, column=1)
+
+            washModeConfirmButton = Button(customiseWin, text="Confirm", command=confirmWashMode)
+            washModeConfirmButton.grid(row=index + 2, column=2)
+    updateGUI()
+
+
 """ These function are used to manage the GUI and make sure it is up to date"""
 def updateGUI():
     """ This function updates each label by configuring the text to be the string function of each device """
@@ -217,6 +225,7 @@ def quit():
     """ This function is used for the quit button at the top of the GUI """
     deleteGUI()
     mainWin.destroy()
+
 
 """ Main functions that are outlined in the coursework specification """
 def setupGUI():
