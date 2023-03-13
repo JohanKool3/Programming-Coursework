@@ -60,11 +60,13 @@ def createDevices():
 
         # Anonymous function for toggling a given device
         def toggleDevice(index=i):
+            """ Toggles a device at a given index in the 'smartHome' object """
             device = smartHome.getDeviceat(index)
             device.toggleSwitch()
             updateGUI()
 
         def customiseDevice(index=i):
+            """ Anonymous function to forward the index of the device to the customise window """
             customiseWindow(index)
 
         device = smartHome.devices[i]
@@ -139,6 +141,8 @@ def removeDeviceWindow():
     for index in range(len(smartHome.getDevices())):
 
         def removeDevice(index=index):
+            """ Removes devices from 'SmartHome' and removes its display label from the GUI """
+
             removeWin.destroy()
             smartHome.removeDeviceAt(index)
             deviceLabels.remove(deviceLabels[index])
@@ -274,4 +278,5 @@ def main():
     setupHome()
     setupGUI()
 
+# Run main function
 main()
