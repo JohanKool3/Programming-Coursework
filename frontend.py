@@ -166,34 +166,50 @@ def customiseWindow(index):
     customiseWin.resizable(False, False)
 
     customiseTitle = Label(customiseWin, text="Customise Device",font=("TkDefaultFont", 20, "bold"))
-    customiseTitle.grid(row=0, column=1, columnspan=2)
+    customiseTitle.grid(row=0, column=0, columnspan=2)
 
     # Handle customisation differently for each device type
-    if type(device) == SmartPlug:
+
         
-        consumptionLabel = Label(customiseWin, text="Consumption (W):")
-        consumptionLabel.grid(row=1, column=0)
+    consumptionLabel = Label(customiseWin, text="Consumption (W):")
+    consumptionLabel.grid(row=1, column=0)
 
-        consumptionEntry = Entry(customiseWin)
-        consumptionEntry.insert(0, device.getConsumptionRate())
-        consumptionEntry.grid(row=1, column=1)
+    consumptionEntry = Entry(customiseWin)
+    consumptionEntry.insert(0, device.getConsumptionRate())
+    consumptionEntry.grid(row=1, column=1)
 
-        def confirmConsumption(d=device):
-            device.setConsumptionRate(consumptionEntry.get())
-            customiseWin.destroy()
-            updateGUI()
+    def confirmConsumption(d=device):
+        """ This anonymous function is responsible for confirming the new consumption rate for the device """
 
-        confirmButton = Button(customiseWin, text="Confirm", command=confirmConsumption)
-        confirmButton.grid(row=1, column=2)
+        # Error handling for invalid data types
+        try:
+            newConsumptionRate = int(consumptionEntry.get())
 
-    else:
+            # Error catching for out of bounds values
+            if  not (0 <= newConsumptionRate <=150):
+                errorLabel.config(text=f"Value {newConsumptionRate} is out of bounds, please enter a number between 0 and 150")
+            else:
+                device.setConsumptionRate(consumptionEntry.get())
+                customiseWin.destroy()
+                updateGUI()
+
+        except:
+            newConsumptionRate = consumptionEntry.get()
+            errorLabel.config(text=f"Value {newConsumptionRate} is not Valid, please enter a number between 0 and 150")
+            
+
+    confirmButton = Button(customiseWin, text="Confirm", command=confirmConsumption)
+    confirmButton.grid(row=1, column=2)
+
+    if type(device) == SmartWashingMachine:
         
         washModeTitleLabel = Label(customiseWin, text="Wash Mode:")
-        washModeTitleLabel.grid(row=1, column=0)
+        washModeTitleLabel.grid(row=2, column=0)
 
         for index in range(len(device.getWashModes())):
             
             def confirmWashMode(washMode=index):
+                """ This anonymous function is responsible for confirming the new wash mode for the device """
                 device.setWashModeAt(washMode)
                 customiseWin.destroy()
                 updateGUI()
@@ -203,6 +219,9 @@ def customiseWindow(index):
 
             washModeConfirmButton = Button(customiseWin, text="Confirm", command=confirmWashMode)
             washModeConfirmButton.grid(row=index + 2, column=2)
+
+    errorLabel = Label(customiseWin, text="")
+    errorLabel.grid(row=100, column=0, columnspan=3)
     updateGUI()
 
 
@@ -255,6 +274,4 @@ def main():
     setupHome()
     setupGUI()
 
-# Only runs this if the file is run directly
-if __name__ == "__main__":
-    main()
+main()
