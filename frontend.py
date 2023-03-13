@@ -39,10 +39,6 @@ def createTopLine():
     titleLabel = Label(mainWin, text="Smart Home", font=("TkDefaultFont", 20, "bold"))
     titleLabel.grid(row=0, column=0, columnspan=2)
 
-    # Exit button
-    exitButton = Button(mainWin, text="Exit", command=quit)
-    exitButton.grid(row=0, column=1)
-
     # Global buttons for all devices
     switchOffAllButton = Button(mainWin, text="Switch Off All", command=turnoffAllDevices)
     switchOffAllButton.grid(row=1, column=0)
